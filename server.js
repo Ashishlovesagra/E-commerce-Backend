@@ -20,7 +20,7 @@ const app = express();
 // opts.jwtFromRequest = cookieExtractor;
 // opts.secretOrKey = process.env.JWT_SECRET;
 //MiddleWares
-app.use(cors());
+app.use(cors({origin: 'http://localhost:5173'}));
 app.use(express.json());
 app.use(morgan("dev"));
 
