@@ -20,7 +20,7 @@ const app = express();
 // opts.jwtFromRequest = cookieExtractor;
 // opts.secretOrKey = process.env.JWT_SECRET;
 //MiddleWares
-app.use(cors({origin: ['http://localhost:5173','https://64b6ca9184ffc209ec837ecd--celadon-pasca-304ee0.netlify.app/']}));
+app.use(cors({origin: ['http://localhost:5173','https://64b6ca9184ffc209ec837ecd--celadon-pasca-304ee0.netlify.app']}));
 app.use(express.json());
 app.use(morgan("dev"));
 
