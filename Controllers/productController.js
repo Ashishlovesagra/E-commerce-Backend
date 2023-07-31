@@ -1,6 +1,20 @@
 import slugify from "slugify";
 import productModel from "../Models/productModel.js";
 import categoryModel from "../Models/categoryModel.js";
+import orderModel from "../Models/orderModel.js";
+import braintree from 'braintree';
+import dotenv from "dotenv";
+
+//Configure env
+dotenv.config();
+
+//payment gateway
+var gateway = new braintree.BraintreeGateway({
+  environment: braintree.Environment.Sandbox,
+  merchantId: process.env.BRAINTREE_MerchantID,
+  publicKey: process.env.BRAINTREE_PublicKey,
+  privateKey: process.env.BRAINTREE_PrivateKey,
+});
 
 export const createProductController = async (req, res) => {
   try {
@@ -292,3 +306,53 @@ export const productCategoryController = async (req,res) =>{
   })
 }
 }
+
+//payment gateway API
+
+export const braintreeTokenController = async (req,res) => {
+  try {
+    gateway.clientToken.generate({}, function(err,respose){
+      if(err){
+        res.status(500).send(err);
+      } else{
+        res.send(respose);
+      }
+    })
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//paymwnts
+
+export const braintreePaymentContraoller = async (req,res) => {
+  try {
+    const {cart , nonce} = req.body;
+    let total = 0;
+    cart.map((i)=>{
+      total += i.price;
+    });
+    let newTransaction = gateway.transaction.sale({
+      amount:total,
+      paymentMethodNonce: nonce ,
+      options:{
+        submitForSettlement:true
+      }
+    },
+    function(error,result){
+      if(result){
+        const order = new orderModel({
+          products: cart,
+          payment: result,
+          buyer: req.user._id
+        }).save()
+        res.json({ok:true})
+      } else{
+        res.status(500).send(error);
+      }
+    }
+    )
+  } catch (error) {
+    console.log(error);
+  }
+} ;
